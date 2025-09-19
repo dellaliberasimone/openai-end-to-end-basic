@@ -69,8 +69,8 @@ Follow these instructions to deploy this example to your Azure subscription, try
 
 - The [Azure CLI installed](https://learn.microsoft.com/cli/azure/install-azure-cli)
 
-  If you're executing this from WSL, be sure the Azure CLI is installed in WSL and is not using the version installed in Windows. `which az` should show `/usr/bin/az`.
-
+  If you are executing this from Powershell, be sure the Azure CLI is installed.
+  
 ### 1. :rocket: Deploy the infrastructure
 
 The following steps are required to deploy the infrastructure from the command line.
@@ -94,13 +94,13 @@ The following steps are required to deploy the infrastructure from the command l
    This deployment has been tested in the following locations: `australiaeast`, `eastus`, `eastus2`, `francecentral`, `japaneast`, `southcentralus`, `swedencentral`, `switzerlandnorth`, or `uksouth`. You might be successful in other locations as well.
 
    ```bash
-   LOCATION=eastus2
+   $LOCATION="swedencentral"
    ```
 
 1. Set the base name value that will be used as part of the Azure resource names for the resources deployed in this solution.
 
    ```bash
-   BASE_NAME=<base resource name, between 6 and 8 lowercase characters, all DNS names will include this text, so it must be unique.>
+   $BASE_NAME="<base resource name, between 6 and 8 lowercase characters, all DNS names will include this text, so it must be unique.>"
    ```
 
 1. Create a resource group and deploy the infrastructure.
@@ -108,16 +108,13 @@ The following steps are required to deploy the infrastructure from the command l
    *There is an optional tracking ID on this deployment. To opt out of its use, add the following parameter to the deployment code below: `-p telemetryOptOut true`.*
 
    ```bash
-   RESOURCE_GROUP=rg-chat-basic-${BASE_NAME}
+   $RESOURCE_GROUP="rg-chat-basic-$BASE_NAME"
    az group create -l $LOCATION -n $RESOURCE_GROUP
 
-   PRINCIPAL_ID=$(az ad signed-in-user show --query id -o tsv)
+   $PRINCIPAL_ID=az ad signed-in-user show --query id -o tsv
 
    # This takes about 10 minutes to run.
-   az deployment group create -f ./infra-as-code/bicep/main.bicep \
-     -g $RESOURCE_GROUP \
-     -p baseName=${BASE_NAME} \
-     -p yourPrincipalId=$PRINCIPAL_ID
+   az deployment group create -f ./infra-as-code/bicep/main.bicep -g $RESOURCE_GROUP -p baseName=$BASE_NAME -p yourPrincipalId=$PRINCIPAL_ID
    ```
 
 ### 2. Deploy an agent in the Azure AI Foundry Agent service
@@ -161,9 +158,9 @@ Workloads build chat functionality into an application. Those interfaces usually
    *The following variables align with the defaults in this deployment. Update them if you customized anything.*
 
    ```bash
-   AI_FOUNDRY_NAME="aif${BASE_NAME}"
-   AI_FOUNDRY_PROJECT_NAME="projchat"
-   AI_FOUNDRY_AGENT_CREATE_URL="https://${AI_FOUNDRY_NAME}.services.ai.azure.com/api/projects/${AI_FOUNDRY_PROJECT_NAME}/assistants?api-version=2025-05-15-preview"
+   $AI_FOUNDRY_NAME = "aif$BASE_NAME"
+   $AI_FOUNDRY_PROJECT_NAME = "projchat"
+   $AI_FOUNDRY_AGENT_CREATE_URL="https://$AI_FOUNDRY_NAME.services.ai.azure.com/api/projects/$AI_FOUNDRY_PROJECT_NAME/assistants?api-version=2025-05-15-preview"
 
    echo $AI_FOUNDRY_AGENT_CREATE_URL
    ```
@@ -171,7 +168,7 @@ Workloads build chat functionality into an application. Those interfaces usually
 1. Get Agent ID value.
 
    ```bash
-   AGENT_ID=$(az rest -u $AI_FOUNDRY_AGENT_CREATE_URL -m "get" --resource "https://ai.azure.com" --query 'data[0].id' -o tsv)
+   $AGENT_ID=az rest -u $AI_FOUNDRY_AGENT_CREATE_URL -m "get" --resource "https://ai.azure.com" --query 'data[0].id' -o tsv
 
    echo $AGENT_ID
    ````
@@ -179,9 +176,9 @@ Workloads build chat functionality into an application. Those interfaces usually
 1. Update the app configuration to use the agent you deployed.
 
    ```bash
-   APPSERVICE_NAME=app-$BASE_NAME
+   $APPSERVICE_NAME="app-$BASE_NAME"
 
-   az webapp config appsettings set -g $RESOURCE_GROUP -n $APPSERVICE_NAME --settings AIAgentId=${AGENT_ID}
+   az webapp config appsettings set -g $RESOURCE_GROUP -n $APPSERVICE_NAME --settings AIAgentId=$AGENT_ID 
    ````
 
 1. Deploy the ChatUI web app
