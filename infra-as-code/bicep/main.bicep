@@ -85,6 +85,16 @@ module deployApplicationInsights 'application-insights.bicep' = {
   }
 }
 
+@description('Deploy the Azure AI Search service for grounding data.')
+module deployAiSearch 'ai-search.bicep' = {
+  scope: resourceGroup()
+  name: 'aiSearchDeploy'
+  params: {
+    location: location
+    baseName: baseName
+  }
+}
+
 @description('Deploy the web app for the front end demo UI. The web application will call into the Azure AI Foundry Agent Service.')
 module deployWebApp 'web-app.bicep' = {
   scope: resourceGroup()
@@ -106,3 +116,4 @@ module customerUsageAttributionModule 'customerUsageAttribution/cuaIdResourceGro
   scope: resourceGroup()
   params: {}
 }
+
